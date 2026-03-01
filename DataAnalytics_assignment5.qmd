@@ -1,0 +1,164 @@
+---
+title: "DataAnalytics_assignment5"
+format: html
+editor: visual
+---
+
+# Assignment 5 - Generate Sampling Distributions and Confidence Intervals
+
+## Challenge 1
+
+### Step 1
+
+```{r}
+#Loading necessary libraries
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(mosaic)
+
+#Loading in the dataset as a tibble named 'd'
+d <- read.csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/IMDB-movies.csv")
+
+```
+
+### Step 2
+
+```{r}
+#Filtering the list and adding a new column
+d2 <- d %>%
+  filter(startYear >= 1920, startYear <= 1979, 
+         runtimeMinutes >= 60 & runtimeMinutes <= 180) %>%
+  mutate(decade = paste0((startYear %/% 10) * 10, "s"))
+
+```
+
+### Step 3
+
+```{r}
+#Using ggplot2 to plot histograms of the distribution of runtimes for each decade
+ggplot(d2, aes(x = runtimeMinutes)) +
+  geom_histogram(binwidth = 10, color = "pink", fill = "cyan") + #pretty colors
+  facet_wrap(~ decade) #grouping by decade
+
+
+```
+
+### Step 4
+
+```{r}
+#Creating a new dataframe 'results' that contains the population mean and sd for each decade
+results <- d2 %>% 
+  group_by(decade) %>% 
+  summarise(pop_mean = mean(runtimeMinutes, na.rm = TRUE), 
+            pop_sd = sd(runtimeMinutes, na.rm = TRUE))
+```
+
+### Step 5 & Step 6 Combined (note se_mean)
+
+```{r}
+#Drawing a sample of 100 movies and calculating sample mean and sd of runtime
+sample_runtime <- d2 %>%
+   slice_sample(n = 100, replace = FALSE) %>% #pulling 100 movies without replacing
+  summarise(
+    s_mean = mean(runtimeMinutes), #mean of sample
+    s_sd   = sd(runtimeMinutes), #sd of sample
+    s_number   = n(), #confirmation of total number of samples
+    se_mean = s_sd / sqrt(s_number), #standard error of the sample mean
+    decade #adding decade column for inner_join in step 7 (whoops)
+  )
+```
+
+### Step 7
+
+```{r}
+#Creating a new dataframe called comparison that joins population 'results' and sample_runtime 
+comparison <- results %>%
+  inner_join(sample_runtime, by = "decade") %>%
+  mutate(
+    diff_mean   = s_mean - pop_mean) %>%
+  arrange(decade)
+```
+
+### Step 8
+
+```{r}
+#Running a sample distribution of mean runtime by each decade
+#PReliminary
+reps <- 1000  # number of replications
+samp_dist <- vector("list", reps) #creating my dataframe as a vector list with my reps
+#Bulk of code
+for (reps in seq_len(reps)) {
+  sampled_reps <- d2 %>% #designating reps to be pulled from d2
+    group_by(decade) %>%
+    group_modify(~ slice_sample(.x, n = 100, replace = FALSE)) %>% #using splice_sample function again to pull my samples
+    summarise(
+      s_mean = mean(runtimeMinutes, na.rm = TRUE), #sample mean
+      s_sd   = sd(runtimeMinutes,   na.rm = TRUE) #sample sd
+    )
+}
+samp_dist <- bind_rows(samp_dist) #switching from list to proper dataframe
+```
+
+### Step 9
+
+```{r}
+#Calculating the mean and sd of the sampling distribution of sample means (what a mouthful)
+samp_summary <- samp_dist %>%
+  group_by(decade) %>%
+  summarise(
+    s_dist_mean = mean(s_mean, na.rm = TRUE),
+    samp_dist_sd = sd(s_mean, na.rm = TRUE)
+  ) %>%
+  arrange(decade)
+
+#Creating a histogram for the samp_summary
+ggplot(samp_dist, aes(x = s_mean)) + #I really am unsure if this is what is being asked but hopefully going to office hours might help
+  geom_histogram(binwidth = 1, color = "#FF10F0", fill = "#00FFFF") +
+  facet_wrap(~ decade)
+
+```
+
+### Step 10
+
+```{r}
+#Now comparing population runtime with first and second sample runtime
+comparison2 <- results %>%
+  inner_join(sample_runtime, by = "decade") %>%
+  inner_join(samp_dist, by = "decade") %>%
+  arrange(decade)
+```
+
+## Challenge 2
+
+### Step 1
+
+```{r}
+#Loading in the zombie dataset as z
+z <- read.csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/zombies.csv")
+```
+
+### Step 2
+
+```{r}
+#Calculating the population mean and standard deviation 
+zombie_results <- z %>% 
+  summarise(height_mean = mean(height, na.rm = TRUE), 
+            height_sd = sqrt(mean((height - mean(height))^2)),
+            weight_mean = mean(weight, na.rm = TRUE),
+            weight_sd = sqrt(mean((weight - mean(weight))^2)),
+            age_mean = mean(age, na.rm = TRUE),
+            age_sd = sqrt(mean((age - mean(age))^2)),
+            num_kill_mean = mean(zombies_killed, na.rm = TRUE),
+            num_kil_sd = sqrt(mean((zombies_killed - mean(zombies_killed))^2)),
+            edu_mean = mean(years_of_education, na.rm = TRUE),
+            edu_sd = sqrt(mean((years_of_education - mean(years_of_education))^2))
+            )
+```
+
+### Step 3
+
+```{r}
+ggplot(z, aes(x = gender)) +
+  geom_boxplot() +
+  facet_wrap(~ height)
