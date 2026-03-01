@@ -159,6 +159,6 @@ zombie_results <- z %>%
 ### Step 3
 
 ```{r}
-ggplot(z, aes(x = gender)) +
+ggplot(z, aes(x = height)) +
   geom_boxplot() +
-  facet_wrap(~ height)
+  facet_wrap(~ gender)
