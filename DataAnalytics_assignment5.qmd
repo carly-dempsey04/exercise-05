@@ -89,8 +89,9 @@ comparison <- results %>%
 reps <- 1000  # number of replications
 samp_dist <- vector("list", reps) #creating my dataframe as a vector list with my reps
 #Bulk of code
-for (reps in seq_len(reps)) {
-  sampled_reps <- d2 %>% #designating reps to be pulled from d2
+for (reps in seq_len(i)) {
+  samp_dist[[i]] <- d2 %>%
+  #sampled_reps <- d2 %>% #designating reps to be pulled from d2
     group_by(decade) %>%
     group_modify(~ slice_sample(.x, n = 100, replace = FALSE)) %>% #using splice_sample function again to pull my samples
     summarise(
@@ -221,20 +222,20 @@ There appears to be a positive correlation between age and height as well as age
 #Using Q-Q plots to assess distribution
 
 #Variable 'age' distribution
-qqnorm(z$age, main = "QQ Plot - Age Distribution", col = "#FFE5B4") +
+qqnorm(z$age, main = "QQ Plot - Age Distribution", col = "#FFE5B4")
   qqline(z$age, col = "#FF0000")
 #Normal distribution
 
 #Variable 'weight' distribution
-qqnorm(z$weight, main = "QQ Plot - Weight Distribution", col = "#FFE5B4") +
+qqnorm(z$weight, main = "QQ Plot - Weight Distribution", col = "#FFE5B4")
   qqline(z$weight, col = "black")
 #Suggests Normal Distribution
 
 #Variable 'height' distribution
-qqnorm(z$height, main = "QQ Plot - Height Distribution", col = "#FF0000") +
+qqnorm(z$height, main = "QQ Plot - Height Distribution", col = "#FF0000")
   qqline(z$height, col = "black")
 #End curvurture suggests difference in tail weight; validate with boxplot
-ggplot(z, aes(x = height)) +
+ggplot(z, aes(x = height))
   geom_histogram(binwidth = 10, color = "black", fill = "red")
 #Potential right-skew
 library(moments)
@@ -242,13 +243,13 @@ skewness(z$height)
 #Slightly right-skewed
 
 #Variable 'zombies_killed' distribution
-ggplot(z, aes(x = zombies_killed)) + 
+ggplot(z, aes(x = zombies_killed)) +
   geom_histogram(binwidth = 10, color = "red", fill = "pink")
 skewness(z$zombies_killed)
 #strong right skew
 
 #Variable 'years_of_education' distribution
-ggplot(z, aes(x = years_of_education)) + 
+ggplot(z, aes(x = years_of_education)) +
   geom_histogram(binwidth = 10, color = "red", fill = "pink")
 skewness(z$years_of_education)
 #right skew
@@ -314,7 +315,7 @@ n_per_sample <- 50 # number of values per replication
 samp_dist_height <- vector("list", reps) #creating my dataframe as a vector list with my reps
 
 #Bulk of code
-for (i in seq_len(reps)) {
+for (i in seq_len(reps_z)) {
   sampled_reps <- z %>% #designating reps to be pulled from z
    slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
   samp_dist_height[[i]] <- sampled_reps %>%
@@ -335,7 +336,7 @@ n_per_sample <- 50 # number of values per replication
 samp_dist_weight <- vector("list", reps) #creating my dataframe as a vector list with my reps
 
 #Bulk of code
-for (i in seq_len(reps)) {
+for (i in seq_len(reps_z)) {
   sampled_reps <- z %>% #designating reps to be pulled from z
    slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
   samp_dist_weight[[i]] <- sampled_reps %>%
@@ -354,7 +355,7 @@ n_per_sample <- 50 # number of values per replication
 samp_dist_age <- vector("list", reps) #creating my dataframe as a vector list with my reps
 
 #Bulk of code
-for (i in seq_len(reps)) {
+for (i in seq_len(reps_z)) {
   sampled_reps <- z %>% #designating reps to be pulled from z
    slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
   samp_dist_age[[i]] <- sampled_reps %>%
@@ -374,7 +375,7 @@ n_per_sample <- 50 # number of values per replication
 samp_dist_killedz <- vector("list", reps) #creating my dataframe as a vector list with my reps
 
 #Bulk of code
-for (i in seq_len(reps)) {
+for (i in seq_len(reps_z)) {
   sampled_reps <- z %>% #designating reps to be pulled from z
    slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
   samp_dist_killedz[[i]] <- sampled_reps %>%
@@ -394,7 +395,7 @@ n_per_sample <- 50 # number of values per replication
 samp_dist_edu <- vector("list", reps) #creating my dataframe as a vector list with my reps
 
 #Bulk of code
-for (i in seq_len(reps)) {
+for (i in seq_len(reps_z)) {
   sampled_reps <- z %>% #designating reps to be pulled from z
    slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
   samp_dist_edu[[i]] <- sampled_reps %>%
@@ -410,8 +411,89 @@ samp_dist_edu <- bind_rows(samp_dist_edu)
 ### Step 8
 
 ```{r}
+#Plotting the sampling distributions for each variable mean
+
+#Plotting height sampling distribution
+ggplot(samp_dist_height, aes(x = z_mean_h)) +
+  geom_histogram(binwidth = 10, color = "blue", fill = "green")
+#Slight skew 
+
+#Plotting the weight sampling distribution
+ggplot(samp_dist_weight, aes(x = z_mean_w)) +
+  geom_histogram(binwidth = 1, color = "pink", fill = "blue")
+#Normal distribution 
+
+#Plotting age sampling distribution
+ggplot(samp_dist_age, aes(x = z_mean_a))
+  geom_histogram(binwidth = 1, color = "blue", fill = "pink")
+  
+#PLotting zombie killed sampling distribution
+ggplot(samp_dist_killedz, aes(x = z_mean_zk)) +
+  geom_histogram(binwidth = 1, color = "violet", "pink")
+  
+#Plotting education sampling distribution
+ggplot(samp_dist_edu, aes(x = z_mean_edu))
+  geom_histogram(binwidth = 1, color = "pink", fill = "violet")
+  
+```
+
+### Step 9
+
+```{r}
+#Construct a 95% confidence interval for each mean directly from the sampling distribution of sample means using the central 95% that distribution (i.e., by setting the lower and upper CI bounds to 2.5% and 97.5% of the way through that distribution).
 
 
-ggplot(samp_dist_height, aes(x = z_mean_h)) + 
-  geom_histogram(binwidth = 1, color = "blue", fill = "green")
+
+ci_95_height <- samp_dist_height %>%
+  summarise(
+    ci_lower = quantile(z_mean_h, probs = 0.025),
+    ci_upper = quantile(z_mean_h, probs = 0.975),
+    reps = n(),
+    .groups = "drop"
+  )
+ci_95_height
+
+ci_95_weight <- samp_dist_weight %>%
+  summarise(
+    ci_lower = quantile(z_mean_w, probs = 0.025), 
+    ci_upper = quantile(z_mean_w, probs = 0.975),
+    reps = n(),
+    .groups = "drop"
+  )
+ci_95_weight
+
+ci_95_age <- samp_dist_age %>%
+  summarise(
+    ci_lower = quantile(z_mean_a, probs = 0.025),
+    ci_upper = quantile(z_mean_a, probs = 0.975),
+    reps = n(),
+    .groups = "drop"
+  )
+ci_95_age
+
+ci_95_zkill <- samp_dist_killedz %>%
+  summarise(
+    ci_lower = quantile(z_mean_zk, probs = 0.025),
+    ci_upper = quantile(z_mean_zk, probs = 0.975),
+    reps = n(),
+    .groups = "drop"
+  )
+ci_95_zkill
+
+ci_95_edu <- samp_dist_edu %>%
+  summarise(
+    ci_lower = quantile(z_mean_edu, probs = 0.025),
+    ci_upper = quantile(z_mean_edu, probs = 0.975),
+    reps = n(),
+    .groups = "drop"
+  )
+ci_95_edu
+```
+
+### Step 10
+
+Finally, use bootstrapping to generate a 95% confidence interval for each variable mean by resampling 1000 samples, with replacement, from your original sample (i.e., by setting the lower and upper CI bounds to 2.5% and 97.5% of the way through the sampling distribution generated by bootstrapping). How does this compare to the CIs generated in Step 9?
+
+```{r}
+
 ```
