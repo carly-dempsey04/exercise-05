@@ -16,6 +16,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(mosaic)
+library(cowplot)
 
 #Loading in the dataset as a tibble named 'd'
 d <- read.csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/IMDB-movies.csv")
@@ -158,7 +159,165 @@ zombie_results <- z %>%
 
 ### Step 3
 
+\`\`\`{r} ggplot(z, aes(x = height)) + geom_boxplot() + facet_wrap(\~ gender)
+
 ```{r}
+#Using ggplot2 to plot histograms of each of the variables above by gender
+
+#Boxplot for height
+height_box <- ggplot(z, aes(x = height)) +
+  geom_histogram(binwidth = 10, color = "#FFF01F", fill = "#39ff14") + #not so pretty colors
+  facet_wrap(~ gender) #grouping by gender
+
+#Boxplot for weight
+weight_box <- ggplot(z, aes(x = weight)) +
+  geom_histogram(binwidth = 10, color = "#FFF01F", fill = "#39ff14") + #not so pretty colors
+  facet_wrap(~ gender) #grouping by gender
+
+#Boxplot for age
+age_box <- ggplot(z, aes(x = age)) +
+  geom_histogram(binwidth = 10, color = "#FFF01F", fill = "#39ff14") + #not so pretty colors
+  facet_wrap(~ gender) #grouping by gender
+
+#Boxplot for # Killed
+kill_box <- ggplot(z, aes(x = zombies_killed)) +
+  geom_histogram(binwidth = 10, color = "#FFF01F", fill = "#39ff14") + #not so pretty colors
+  facet_wrap(~ gender) #grouping by gender
+
+#Boxplot for education
+edu_box <- ggplot(z, aes(x = years_of_education)) +
+  geom_histogram(binwidth = 10, color = "#FFF01F", fill = "#39ff14") + #not so pretty colors
+  facet_wrap(~ gender) #grouping by gender
+
+#Placing all boxplots together
+plot_grid(age_box, edu_box, height_box, kill_box, weight_box, ncol = 2)
+```
+
+### Step 4
+
+```{r}
+#Setting up gender as a factor for split colors
+z$sex <- factor(z$gender)
+
+#Scatterplot for height
+ggplot(data = z, aes(x = age, y = height, color = gender)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  labs(x = "Age", y = "Height")
+
+
+#Scatterplot for height
+ggplot(data = z, aes(x = age, y = weight, color = gender)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  labs(x = "Age", y = "Weight")
+```
+
+There appears to be a positive correlation between age and height as well as age and weight, although the more apparent trends lies in the difference between gender.
+
+### Step 5
+
+```{r}
+#Using Q-Q plots to assess distribution
+
+#Variable 'age' distribution
+qqnorm(z$age, main = "QQ Plot - Age Distribution", col = "#FFE5B4") +
+  qqline(z$age, col = "#FF0000")
+#Normal distribution
+
+#Variable 'weight' distribution
+qqnorm(z$weight, main = "QQ Plot - Weight Distribution", col = "#FFE5B4") +
+  qqline(z$weight, col = "black")
+#Suggests Normal Distribution
+
+#Variable 'height' distribution
+qqnorm(z$height, main = "QQ Plot - Height Distribution", col = "#FF0000") +
+  qqline(z$height, col = "black")
+#End curvurture suggests difference in tail weight; validate with boxplot
 ggplot(z, aes(x = height)) +
-  geom_boxplot() +
-  facet_wrap(~ gender)
+  geom_histogram(binwidth = 10, color = "black", fill = "red")
+#Potential right-skew
+library(moments)
+skewness(z$height)
+#Slightly right-skewed
+
+#Variable 'zombies_killed' distribution
+ggplot(z, aes(x = zombies_killed)) + 
+  geom_histogram(binwidth = 10, color = "red", fill = "pink")
+skewness(z$zombies_killed)
+#strong right skew
+
+#Variable 'years_of_education' distribution
+ggplot(z, aes(x = years_of_education)) + 
+  geom_histogram(binwidth = 10, color = "red", fill = "pink")
+skewness(z$years_of_education)
+#right skew
+
+detach(package:moments)
+```
+
+### Step 6
+
+```{r}
+#height, weight, age, zombies_killed, years_of education
+
+
+sample_z <- z %>%
+   slice_sample(n = 50, replace = FALSE) %>% #pulling 50 survivors without replacing
+  summarise(
+    s_number = n(), #confirmation of total number of samples
+    z_mean_height = mean(height), #mean of sample height
+    z_sd_height = sd(height), #sd of sample height
+    se_mean_height = z_sd_height / sqrt(s_number), #standard error of the sample mean
+    z_mean_weight = mean(weight), #mean of sample height
+    z_sd_weight = sd(weight), #sd of sample height
+    se_mean_weight = z_sd_weight / sqrt(s_number), #standard error of the sample mean
+    z_mean_age = mean(age), #mean of sample height
+    z_sd_age = sd(age), #sd of sample height
+    se_mean_age = z_sd_age / sqrt(s_number), #standard error of the sample mean
+    z_mean_zombies_killed = mean(zombies_killed), #mean of sample height
+    z_sd_zombies_killed = sd(zombies_killed), #sd of sample height
+    se_mean_zombies_killed = z_sd_zombies_killed / sqrt(s_number), #standard error of the sample mean
+    z_mean_years_of_eduction = mean(years_of_education), #mean of sample height
+    z_sd_years_of_education = sd(years_of_education), #sd of sample height
+    se_mean_years_of_education = z_sd_years_of_education / sqrt(s_number), #standard error of the sample mean
+    
+    
+    #decade #adding decade column for inner_join in step 7 (whoops)
+  )
+
+
+#95% Confidence interval of Height
+(ci_height <- sample_z$z_mean_height + c(-1, 1) * qnorm(1- 0.05) * sample_z$se_mean_height)
+
+#95% Confidence interval of Wight
+(ci_height <- sample_z$z_mean_weight + c(-1, 1) * qnorm(1- 0.05) * sample_z$se_mean_weight)
+
+#95% Confidence interval of Age
+(ci_height <- sample_z$z_mean_age + c(-1, 1) * qnorm(1- 0.05) * sample_z$se_mean_age)
+
+#95% Confidence interval of zombies_killed
+(ci_height <- sample_z$z_mean_zombies_killed + c(-1, 1) * qnorm(1- 0.05) * sample_z$se_mean_zombies_killed)
+
+#95% Confidence interval of years_of_education
+(ci_height <- sample_z$z_mean_years_of_education + c(-1, 1) * qnorm(1- 0.05) * sample_z$se_mean_years_of_education)
+```
+
+### Step 7
+
+```{r}
+#Running a sample distribution of mean height
+#PReliminary
+reps <- 199  # number of replications
+samp_dist_height <- vector("list", reps) #creating my dataframe as a vector list with my reps
+#Bulk of code
+for (reps in seq_len(reps)) {
+  sampled_reps <- z %>% #designating reps to be pulled from d2
+    group_modify(~ slice_sample(.x, n = 50, replace = FALSE)) %>% #using splice_sample function again to pull my samples
+    summarise(
+      z_mean_h = mean(height, na.rm = TRUE), #sample mean
+      z_sd_h   = sd(height,   na.rm = TRUE) #sample sd
+    )
+}
+samp_dist_height <- bind_rows(samp_dist) #switching from list to proper dataframe
+```
