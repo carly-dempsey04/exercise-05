@@ -308,16 +308,110 @@ sample_z <- z %>%
 ```{r}
 #Running a sample distribution of mean height
 #PReliminary
-reps <- 199  # number of replications
+set.seed(123)
+reps_z <- 199  # number of replications
+n_per_sample <- 50 # number of values per replication
 samp_dist_height <- vector("list", reps) #creating my dataframe as a vector list with my reps
+
 #Bulk of code
-for (reps in seq_len(reps)) {
-  sampled_reps <- z %>% #designating reps to be pulled from d2
-    group_modify(~ slice_sample(.x, n = 50, replace = FALSE)) %>% #using splice_sample function again to pull my samples
+for (i in seq_len(reps)) {
+  sampled_reps <- z %>% #designating reps to be pulled from z
+   slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
+  samp_dist_height[[i]] <- sampled_reps %>%
     summarise(
       z_mean_h = mean(height, na.rm = TRUE), #sample mean
       z_sd_h   = sd(height,   na.rm = TRUE) #sample sd
     )
 }
-samp_dist_height <- bind_rows(samp_dist) #switching from list to proper dataframe
+samp_dist_height <- bind_rows(samp_dist_height)
+
+
+
+#Running a sample distribution of mean weight
+#PReliminary
+set.seed(1234)
+reps_z <- 199  # number of replications
+n_per_sample <- 50 # number of values per replication
+samp_dist_weight <- vector("list", reps) #creating my dataframe as a vector list with my reps
+
+#Bulk of code
+for (i in seq_len(reps)) {
+  sampled_reps <- z %>% #designating reps to be pulled from z
+   slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
+  samp_dist_weight[[i]] <- sampled_reps %>%
+    summarise(
+      z_mean_w = mean(weight, na.rm = TRUE), #sample mean
+      z_sd_w = sd(weight,   na.rm = TRUE) #sample sd
+    )
+}
+samp_dist_weight <- bind_rows(samp_dist_weight)
+
+#Running a sample distribution of mean age
+#PReliminary
+set.seed(1235)
+reps_z <- 199  # number of replications
+n_per_sample <- 50 # number of values per replication
+samp_dist_age <- vector("list", reps) #creating my dataframe as a vector list with my reps
+
+#Bulk of code
+for (i in seq_len(reps)) {
+  sampled_reps <- z %>% #designating reps to be pulled from z
+   slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
+  samp_dist_age[[i]] <- sampled_reps %>%
+    summarise(
+      z_mean_a = mean(age, na.rm = TRUE), #sample mean
+      z_sd_a = sd(age,   na.rm = TRUE) #sample sd
+    )
+}
+samp_dist_age <- bind_rows(samp_dist_age)
+
+
+#Running a sample distribution of mean zombies killed
+#PReliminary
+set.seed(1236)
+reps_z <- 199  # number of replications
+n_per_sample <- 50 # number of values per replication
+samp_dist_killedz <- vector("list", reps) #creating my dataframe as a vector list with my reps
+
+#Bulk of code
+for (i in seq_len(reps)) {
+  sampled_reps <- z %>% #designating reps to be pulled from z
+   slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
+  samp_dist_killedz[[i]] <- sampled_reps %>%
+    summarise(
+      z_mean_zk = mean(zombies_killed, na.rm = TRUE), #sample mean
+      z_sd_zk = sd(zombies_killed, na.rm = TRUE) #sample sd
+    )
+}
+samp_dist_killedz <- bind_rows(samp_dist_killedz)
+
+
+#Running a sample distribution of mean education
+#PReliminary
+set.seed(1237)
+reps_z <- 199  # number of replications
+n_per_sample <- 50 # number of values per replication
+samp_dist_edu <- vector("list", reps) #creating my dataframe as a vector list with my reps
+
+#Bulk of code
+for (i in seq_len(reps)) {
+  sampled_reps <- z %>% #designating reps to be pulled from z
+   slice_sample(n = n_per_sample, replace = FALSE) #using splice_sample function again to pull my samples
+  samp_dist_edu[[i]] <- sampled_reps %>%
+    summarise(
+      z_mean_edu = mean(years_of_education, na.rm = TRUE), #sample mean
+      z_sd_edu = sd(years_of_education, na.rm = TRUE) #sample sd
+    )
+}
+samp_dist_edu <- bind_rows(samp_dist_edu)
+
+```
+
+### Step 8
+
+```{r}
+
+
+ggplot(samp_dist_height, aes(x = z_mean_h)) + 
+  geom_histogram(binwidth = 1, color = "blue", fill = "green")
 ```
