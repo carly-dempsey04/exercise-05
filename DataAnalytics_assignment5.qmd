@@ -28,7 +28,7 @@ d <- read.csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/IMDB-
 ```{r}
 #Filtering the list and adding a new column
 d2 <- d %>%
-  filter(startYear >= 1920, startYear <= 1979, 
+  filter(startYear >= 1920, startYear <= 1978, 
          runtimeMinutes >= 60 & runtimeMinutes <= 180) %>%
   mutate(decade = paste0((startYear %/% 10) * 10, "s"))
 
